@@ -269,7 +269,7 @@ const handlers: Record<string, (a: Args) => unknown> = {
   cancel_space_scan: () => undefined,
   vitals: () => ({
     cpuPct: 12 + Math.random() * 10,
-    ramUsed: 6 * GB,
+    ramUsed: (5.6 + Math.random() * 0.8) * GB,
     ramTotal: 16 * GB,
     diskUsed: 356 * GB,
     diskTotal: 476 * GB,

@@ -2,6 +2,10 @@
 
 ## 0.1.0 (unreleased)
 
+- New look that follows the approved design: glass cards on a soft blue backdrop, Fluent icons,
+  its own title bar, a donut summary on Space Map, collapsible Review groups with Select All,
+  and a Run Maintenance button with opt-in tasks.
+
 - Smart Scan: junk files, apps, startup items and health in one scan.
 - Review before deleting; everything goes to the Recycle Bin, never deleted permanently by accident.
 - Applications: uninstall with the app's own uninstaller, then review its leftovers.

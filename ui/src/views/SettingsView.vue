@@ -37,6 +37,7 @@ const when = (ms: number) => new Date(ms).toLocaleString()
   <div v-if="settings" class="page">
     <header>
       <h1>Settings</h1>
+      <p class="subtitle">Choose how win-care works on this PC.</p>
     </header>
     <p v-if="error" role="alert" class="error">{{ error }}</p>
 

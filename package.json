@@ -20,7 +20,9 @@
     "test:e2e": "playwright test",
     "check:rust": "cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace",
     "check": "npm run check:rust && npm run lint && npm run format:check && npm run typecheck && npm run test:unit",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "design:compare": "playwright test -c playwright.design.config.ts compare",
+    "design:check": "playwright test -c playwright.design.config.ts visual"
   },
   "simple-git-hooks": {
     "pre-commit": "cargo fmt --all --check && npx lint-staged && npm run typecheck"
@@ -33,6 +35,7 @@
     "*.{js,mjs,json,css,html,md,yml,yaml}": "prettier --write --ignore-unknown"
   },
   "devDependencies": {
+    "@fluentui/svg-icons": "^1.1.346",
     "@playwright/test": "^1.65.1",
     "@tauri-apps/cli": "^2.12.5",
     "@types/d3-hierarchy": "^3.1.7",

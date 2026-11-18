@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { formatBytes } from '../format'
+import { spaceColor } from '../spaceColors'
 import { layout } from '../treemap'
 import type { SpaceNode } from '../types'
 
@@ -8,7 +9,8 @@ const props = defineProps<{ node: SpaceNode; selected: string }>()
 const emit = defineEmits<{ open: [SpaceNode]; select: [SpaceNode] }>()
 const box = ref<HTMLDivElement>()
 const size = ref({ w: 0, h: 0 })
-const COLORS = ['#2563EB', '#16A34A', '#7C3AED', '#F59E0B', '#06B6D4', '#EF4444', '#64748B']
+/** Space between tiles, as in the mockup. */
+const GAP = 6
 
 let observer: ResizeObserver | undefined
 onMounted(() => {
@@ -19,9 +21,10 @@ onMounted(() => {
 })
 onUnmounted(() => observer?.disconnect())
 
-const rects = computed(() => layout(props.node, size.value.w, size.value.h))
+const rects = computed(() => layout(props.node, size.value.w + GAP, size.value.h + GAP))
 const child = (path: string, name: string) =>
   props.node.children.find((c) => c.path === path && c.name === name)
+const pct = (bytes: number) => (props.node.bytes ? Math.round((bytes / props.node.bytes) * 100) : 0)
 </script>
 
 <template>
@@ -31,20 +34,28 @@ const child = (path: string, name: string) =>
       :key="r.path || r.name"
       type="button"
       class="tile"
-      :class="{ selected: r.path !== '' && r.path === selected, other: r.path === '' }"
+      :class="{
+        selected: r.path !== '' && r.path === selected,
+        other: r.path === '',
+        quiet: i >= 4
+      }"
       :style="{
         left: `${r.x}px`,
         top: `${r.y}px`,
-        width: `${r.w}px`,
-        height: `${r.h}px`,
-        background: COLORS[i % COLORS.length]
+        width: `${Math.max(r.w - GAP, 0)}px`,
+        height: `${Math.max(r.h - GAP, 0)}px`,
+        '--tile': spaceColor(i, r.path === '')
       }"
       :title="`${r.name}: ${formatBytes(r.bytes)}`"
       :disabled="r.path === ''"
       @click="emit('select', child(r.path, r.name)!)"
       @dblclick="emit('open', child(r.path, r.name)!)"
     >
-      <span v-if="r.w > 70 && r.h > 36">{{ r.name }}<br />{{ formatBytes(r.bytes) }}</span>
+      <span v-if="r.w > 90 && r.h > 70" class="label">
+        <span class="name">{{ r.name }}</span>
+        <strong>{{ formatBytes(r.bytes) }}</strong>
+        <span>({{ pct(r.bytes) }}%)</span>
+      </span>
     </button>
   </div>
 </template>
@@ -54,26 +65,53 @@ const child = (path: string, name: string) =>
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 320px;
+  min-height: 300px;
 }
 .tile {
   position: absolute;
-  border: 2px solid var(--surface-alt);
-  border-radius: 8px;
+  /* Label at the top left, like the mockup (buttons centre by default). */
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  border: none;
+  border-radius: 10px;
   color: #fff;
   text-align: left;
-  padding: 8px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 16px;
   overflow: hidden;
-  line-height: 1.3;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--tile) 82%, #fff) 0%,
+    var(--tile) 100%
+  );
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
+}
+.tile.quiet,
+.tile.other {
+  opacity: 0.7;
 }
 .tile.other {
-  opacity: 0.55;
   cursor: default;
+}
+.tile:hover:not(:disabled) {
+  filter: brightness(1.06);
 }
 .tile.selected {
   outline: 3px solid var(--text);
   outline-offset: -3px;
+}
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 15px;
+  line-height: 1.2;
+}
+.label strong {
+  font-family: var(--font-display);
+  font-size: 22px;
+}
+.name {
+  font-weight: 500;
 }
 </style>

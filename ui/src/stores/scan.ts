@@ -59,6 +59,17 @@ export const CATEGORY_LABELS: Record<CategoryId, string> = {
   spaceMap: 'Picked in Space Map'
 }
 
+/** One line under each group title in Review, in plain words. */
+export const CATEGORY_DESCRIPTIONS: Record<CategoryId, string> = {
+  userTemp: 'Temporary files apps left behind',
+  browserCache: 'Saved copies of web pages and images; browsers fetch them again',
+  thumbnailCache: 'Picture previews Windows rebuilds when needed',
+  crashDumps: 'Crash reports and error logs',
+  oldInstallers: 'Setup files in your Downloads folder, older than 30 days',
+  appLeftovers: 'Files an uninstalled app left behind',
+  spaceMap: 'Folders you picked in Space Map'
+}
+
 export function startReview(source: ReviewSource, findings: Finding[]): void {
   store.review.source = source
   store.review.findings = findings

@@ -19,27 +19,22 @@
         "height": 720,
         "minWidth": 900,
         "minHeight": 600,
-        "decorations": true,
-        "transparent": true,
-        "windowEffects": {
-          "effects": ["mica"]
-        }
+        "decorations": false,
+        "shadow": true,
+        "center": true
       },
       {
         "label": "tray",
         "title": "win-care",
         "url": "index.html#/tray",
         "width": 360,
-        "height": 520,
+        "height": 470,
         "visible": false,
         "decorations": false,
         "skipTaskbar": true,
         "alwaysOnTop": true,
         "resizable": false,
-        "transparent": true,
-        "windowEffects": {
-          "effects": ["mica"]
-        }
+        "shadow": true
       }
     ],
     "security": {

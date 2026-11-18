@@ -6,7 +6,6 @@ test('a protected pick from the space map is shown as protected, not selected', 
   page
 }) => {
   await page.goto('/#/space')
-  await page.getByRole('button', { name: 'Scan drive' }).click()
   await page.getByTitle(/^Windows:/).click()
   await page.getByRole('button', { name: 'Review for deletion' }).click()
 

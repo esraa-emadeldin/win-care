@@ -6,6 +6,8 @@ import { formatBytes } from '../format'
 import { startReview } from '../stores/scan'
 import type { App } from '../types'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
+import AppAvatar from '../components/AppAvatar.vue'
+import FluentIcon from '../components/FluentIcon.vue'
 
 const router = useRouter()
 const apps = ref<App[]>([])
@@ -14,6 +16,19 @@ const sort = ref<'size' | 'name'>('size')
 const confirming = ref<App | null>(null)
 const busy = ref('')
 const message = ref('')
+const menuFor = ref<string | null>(null)
+
+/** Install folder recorded by the installer, if any. */
+function installFolder(app: App): string | null {
+  const kind = app.kind as { install_location?: string | null } | null
+  return kind?.install_location ?? null
+}
+
+async function openFolder(app: App) {
+  menuFor.value = null
+  const folder = installFolder(app)
+  if (folder) await api.revealPath(folder)
+}
 
 onMounted(async () => {
   apps.value = await api.listApps()
@@ -54,42 +69,80 @@ async function uninstall(app: App) {
 
 <template>
   <div class="page">
-    <header>
+    <div class="page-head">
       <div>
         <h1>Applications</h1>
-        <p class="muted">Manage your installed apps and remove unwanted ones.</p>
+        <p class="subtitle">Manage your installed apps and remove unwanted ones.</p>
       </div>
       <div class="tools">
-        <input v-model="query" type="search" placeholder="Search apps…" aria-label="Search apps" />
-        <select v-model="sort" aria-label="Sort by">
-          <option value="size">Sort by: Size</option>
-          <option value="name">Sort by: Name</option>
-        </select>
+        <label class="search field">
+          <FluentIcon name="search" :size="18" />
+          <input
+            v-model="query"
+            type="search"
+            placeholder="Search apps..."
+            aria-label="Search apps"
+          />
+        </label>
+        <label class="sort field">
+          <select v-model="sort" aria-label="Sort by">
+            <option value="size">Sort by: Size</option>
+            <option value="name">Sort by: Name</option>
+          </select>
+          <FluentIcon name="chevronDown" :size="16" />
+        </label>
       </div>
-    </header>
+    </div>
 
-    <p v-if="message" class="muted" role="status">{{ message }}</p>
+    <p v-if="message" class="status" role="status">{{ message }}</p>
 
-    <table class="card">
-      <tbody>
-        <tr v-for="app in shown" :key="app.id">
-          <td class="name">
-            <strong>{{ app.name }}</strong>
-            <span class="muted">{{ app.publisher ?? '' }}</span>
-          </td>
-          <td class="size">{{ app.bytes ? formatBytes(app.bytes) : '—' }}</td>
-          <td class="muted">Last used: unknown</td>
-          <td class="action">
-            <button class="btn" type="button" :disabled="busy !== ''" @click="confirming = app">
-              {{ busy === app.id ? 'Uninstalling…' : 'Uninstall' }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <p class="muted note">
-      🛡️ After an app's own uninstaller finishes, win-care shows you what it left behind.
-    </p>
+    <div class="card list">
+      <table>
+        <tbody>
+          <tr v-for="app in shown" :key="app.id">
+            <td class="name">
+              <AppAvatar :name="app.name" :size="40" />
+              <span>
+                <strong>{{ app.name }}</strong>
+                <span class="muted">{{ app.publisher ?? '' }}</span>
+              </span>
+            </td>
+            <td class="size">{{ app.bytes ? formatBytes(app.bytes) : '—' }}</td>
+            <td class="used">Last used: unknown</td>
+            <td class="action">
+              <button class="btn" type="button" :disabled="busy !== ''" @click="confirming = app">
+                {{ busy === app.id ? 'Uninstalling…' : 'Uninstall' }}
+              </button>
+              <span class="menu-wrap">
+                <button
+                  class="more"
+                  type="button"
+                  :aria-label="`More for ${app.name}`"
+                  :aria-expanded="menuFor === app.id"
+                  @click="menuFor = menuFor === app.id ? null : app.id"
+                >
+                  <FluentIcon name="more" :size="20" />
+                </button>
+                <div v-if="menuFor === app.id" class="card menu" role="menu">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    :disabled="!installFolder(app)"
+                    @click="openFolder(app)"
+                  >
+                    Open install folder
+                  </button>
+                </div>
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="info">
+        <span class="shield"><FluentIcon name="shield" :size="20" /></span>
+        After uninstalling, win-care shows any leftover files for you to review.
+      </p>
+    </div>
 
     <ConfirmDialog
       v-if="confirming"
@@ -105,54 +158,143 @@ async function uninstall(app: App) {
 .page {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--space) * 2);
-}
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: var(--space);
-}
-h1 {
-  font-size: 28px;
+  gap: 18px;
+  max-width: 1040px;
 }
 .tools {
   display: flex;
-  gap: var(--space);
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
 }
-input,
-select {
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 340px;
+  color: var(--text-3);
+}
+.search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
   font: inherit;
-  padding: 6px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
   color: var(--text);
+}
+.sort {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.sort select {
+  appearance: none;
+  border: none;
+  background: transparent;
+  font: inherit;
+  color: var(--text);
+  padding-right: 4px;
+  cursor: pointer;
+}
+.status {
+  margin: 0;
+  color: var(--text-2);
+}
+.list {
+  padding: 6px 14px 14px;
 }
 table {
   border-collapse: collapse;
   width: 100%;
-  overflow: hidden;
 }
 td {
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--border);
-}
-tr:last-child td {
-  border-bottom: none;
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--divider);
+  white-space: nowrap;
 }
 .name {
   display: flex;
+  align-items: center;
+  gap: 16px;
+  white-space: normal;
+}
+.name > span {
+  display: flex;
   flex-direction: column;
+  gap: 2px;
+}
+.name strong {
+  font-size: 17px;
 }
 .size {
-  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  font-weight: 600;
   text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.used {
+  color: var(--text);
+  font-size: 16px;
+  padding-left: 40px;
 }
 .action {
   text-align: right;
 }
-.note {
-  margin: 0;
+.menu-wrap {
+  position: relative;
+  display: inline-block;
+}
+.more {
+  border: none;
+  background: none;
+  color: var(--text-2);
+  padding: 6px;
+  margin-left: 6px;
+  border-radius: 8px;
+  vertical-align: middle;
+}
+.more:hover {
+  background: var(--glass-strong);
+}
+.menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 5;
+  padding: 6px;
+  min-width: 190px;
+  background: var(--glass-strong);
+}
+.menu button {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+.menu button:hover:not(:disabled) {
+  background: var(--glass-hover);
+}
+.menu button:disabled {
+  color: var(--text-3);
+  cursor: not-allowed;
+}
+.info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 14px 0 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary) 7%, var(--glass-strong));
+  font-weight: 500;
+}
+.shield {
+  color: var(--primary);
+  display: inline-flex;
 }
 </style>

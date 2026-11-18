@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { api } from '../api'
 import { formatBytes } from '../format'
 import {
+  CATEGORY_DESCRIPTIONS,
   CATEGORY_LABELS,
   type ReviewItem,
   baseName,
@@ -14,6 +15,7 @@ import {
 import type { ApplyReport, CategoryId, SkipReason } from '../types'
 import ReviewGroup from '../components/ReviewGroup.vue'
 import PrimaryButton from '../components/PrimaryButton.vue'
+import FluentIcon from '../components/FluentIcon.vue'
 
 const router = useRouter()
 const items = ref<ReviewItem[]>([])
@@ -41,9 +43,23 @@ const groups = computed(() => {
   const by = new Map<CategoryId, ReviewItem[]>()
   for (const i of items.value)
     by.set(i.finding.category, [...(by.get(i.finding.category) ?? []), i])
-  return [...by.entries()].map(([cat, list]) => ({ title: CATEGORY_LABELS[cat], items: list }))
+  return [...by.entries()].map(([cat, list]) => ({
+    title: CATEGORY_LABELS[cat],
+    description: CATEGORY_DESCRIPTIONS[cat],
+    items: list
+  }))
 })
 const total = computed(() => selectedTotal(items.value))
+const pickable = computed(() =>
+  items.value.filter((i) => i.finding.selectable && i.recyclable && i.blocked === null)
+)
+const allSelected = computed(
+  () => pickable.value.length > 0 && pickable.value.every((i) => i.selected)
+)
+function selectAll(e: Event) {
+  const on = (e.target as HTMLInputElement).checked
+  for (const i of pickable.value) i.selected = on
+}
 const selected = computed(() =>
   items.value.filter(
     (i) => i.selected && i.finding.selectable && i.recyclable && i.blocked === null
@@ -87,22 +103,43 @@ function done() {
 
 <template>
   <div class="review">
-    <header>
-      <h1>Review before deleting</h1>
-      <p class="muted">Nothing will be deleted until you confirm.</p>
-    </header>
+    <div class="page-head">
+      <div>
+        <h1>Review Before Deleting</h1>
+        <p class="subtitle">
+          Please review the items below. Nothing will be deleted until you confirm.
+        </p>
+      </div>
+      <label v-if="!report && pickable.length" class="select-all">
+        <input type="checkbox" :checked="allSelected" @change="selectAll" /> Select All
+      </label>
+    </div>
 
     <p v-if="loading" class="muted">Checking each item…</p>
     <p v-if="error" class="error" role="alert">{{ error }}</p>
 
     <template v-if="!report && !loading">
-      <ReviewGroup v-for="g in groups" :key="g.title" :title="g.title" :items="g.items" />
+      <div class="groups">
+        <ReviewGroup
+          v-for="g in groups"
+          :key="g.title"
+          :title="g.title"
+          :description="g.description"
+          :items="g.items"
+        />
+      </div>
       <p v-if="items.length === 0" class="muted">Nothing to clean right now.</p>
       <footer>
         <button class="btn" type="button" @click="router.back()">Back</button>
-        <PrimaryButton :disabled="busy || total === 0" @click="moveToBin">
+        <button
+          class="btn btn-primary move"
+          type="button"
+          :disabled="busy || total === 0"
+          @click="moveToBin"
+        >
+          <FluentIcon name="trash" :size="20" />
           Move to Recycle Bin ({{ formatBytes(total) }})
-        </PrimaryButton>
+        </button>
       </footer>
     </template>
 
@@ -132,23 +169,46 @@ function done() {
 .review {
   display: flex;
   flex-direction: column;
-  gap: calc(var(--space) * 2);
+  gap: 18px;
+  max-width: 1040px;
 }
-h1 {
-  font-size: 28px;
+.select-all {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15.5px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 footer,
 .result-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: var(--space);
+  margin-top: 4px;
+}
+footer .btn:not(.btn-primary) {
+  padding: 11px 30px;
+  font-size: 15.5px;
+}
+.move {
+  padding: 12px 24px;
+  font-size: 16px;
+  border-radius: 12px;
 }
 .result {
-  padding: calc(var(--space) * 3);
+  padding: 26px;
   display: flex;
   flex-direction: column;
-  gap: var(--space);
+  gap: 10px;
+}
+.result h2 {
+  font-size: 22px;
 }
 .error {
   color: var(--error);

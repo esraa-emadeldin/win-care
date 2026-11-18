@@ -13,3 +13,5 @@ design/chatgpt/*/.lock
 src-tauri/gen/
 # chatgpt-design session files hold private chat links
 design/chatgpt/*/session.json
+# design:compare output (regenerate any time)
+design/compare/

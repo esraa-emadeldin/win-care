@@ -11,7 +11,8 @@ test('startup toggle only for per-user items', async ({ page }) => {
 
 test('empty recycle bin asks first', async ({ page }) => {
   await page.goto('/#/performance')
-  await page.getByRole('button', { name: 'Empty Recycle Bin' }).click()
+  await page.getByRole('checkbox', { name: /Empty Recycle Bin/ }).check()
+  await page.getByRole('button', { name: 'Run Maintenance' }).click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toContainText(
     'Permanently delete 1.2 GB in the Recycle Bin? This cannot be undone.'

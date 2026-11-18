@@ -21,6 +21,9 @@ test('scan then review shows preselected total', async ({ page }) => {
 
 test('old installers start unchecked', async ({ page }) => {
   await scanAndClean(page)
+  // Groups start collapsed, as in the mockup.
+  await page.getByRole('button', { name: 'Show Old installers in Downloads' }).click()
+  await page.getByRole('button', { name: 'Show Browser caches' }).click()
   await expect(page.getByRole('checkbox', { name: 'setup-old.exe' })).not.toBeChecked()
   await expect(page.getByRole('checkbox', { name: 'session-cache' })).toBeChecked()
 })
