@@ -1,0 +1,10 @@
+{
+  // VS Code shows a "Install recommended extensions?" popup when you open the project
+  "recommendations": [
+    "Vue.volar",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-playwright.playwright",
+    "EditorConfig.EditorConfig"
+  ]
+}

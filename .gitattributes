@@ -1,0 +1,10 @@
+# Store and check out text files with LF line endings on every OS.
+# Why: Cloudflare and GitHub Actions build on Linux; mixing CRLF (Windows)
+# and LF causes noisy diffs and those "LF will be replaced by CRLF" warnings.
+* text=auto eol=lf
+
+# Binary files: never touch them
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary

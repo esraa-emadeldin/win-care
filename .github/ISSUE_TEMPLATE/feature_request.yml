@@ -1,0 +1,22 @@
+name: Feature request
+description: An idea to make win-care better.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would it solve?
+      description: Describe the situation, not the solution yet.
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+  - type: checkboxes
+    id: rules
+    attributes:
+      label: Fits the safety model
+      options:
+        - label: It shows the user everything before changing anything, and needs no telemetry.
+          required: true

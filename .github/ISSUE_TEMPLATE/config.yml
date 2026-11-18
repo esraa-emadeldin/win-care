@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea to discuss
+    url: https://github.com/esraa-emadeldin/win-care/discussions
+    about: Ask and discuss in GitHub Discussions.
+  - name: Security problem
+    url: https://github.com/esraa-emadeldin/win-care/security/advisories/new
+    about: Report privately — never in a public issue.

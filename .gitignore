@@ -1,0 +1,15 @@
+# Rust
+target/
+# Node / UI
+node_modules/
+ui/dist/
+test-results/
+playwright-report/
+# chatgpt-design run lock
+design/chatgpt/*/.lock
+# local Claude overrides
+.claude/settings.local.json
+# Tauri generated schemas
+src-tauri/gen/
+# chatgpt-design session files hold private chat links
+design/chatgpt/*/session.json
