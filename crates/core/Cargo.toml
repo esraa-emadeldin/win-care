@@ -11,4 +11,4 @@ serde_json.workspace = true
 
 [dev-dependencies]
 tempfile.workspace = true
-junction = "1"
+junction = "2"
